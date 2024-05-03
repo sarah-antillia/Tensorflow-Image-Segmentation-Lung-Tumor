@@ -32,8 +32,11 @@ class MaskColorizedWriter:
     print("=== MaskColorizedWriter ")
     self.config = config 
     #ConfigParser(config_file)
+    self.num_classes  = self.config.get(ConfigParser.MODEL, "num_classes")
+
     self.mask_colors     = self.config.get(ConfigParser.MASK, "mask_colors")
     self.grayscaling     = self.config.get(ConfigParser.MASK, "grayscaling", dvalue=None)
+    self.sharpening      = self.config.get(ConfigParser.MASK, "sharpening",  dvalue=False)
     print("--- self.grayscaling {}".format(self.grayscaling))
 
     self.mask_channels   = self.config.get(ConfigParser.MASK, "mask_channels")
@@ -44,6 +47,13 @@ class MaskColorizedWriter:
                                                    dvalue="rgb")    
     self.mask_colorize = self.config.get(ConfigParser.INFER, "mask_colorize", dvalue=False)
 
+    self.colorized_dir = self.config.get(ConfigParser.INFER, "colorized_dir", dvalue=None)
+    if self.mask_colorize and self.colorized_dir !=None:
+      if os.path.exists(self.colorized_dir):
+        shutil.rmtree(self.colorized_dir)
+      if not os.path.exists(self.colorized_dir):
+        os.makedirs(self.colorized_dir)
+        
   def create_gray_map(self,):
      self.gray_map = []
      print("---- create_gray_map {}".format(self.grayscaling))
@@ -61,13 +71,7 @@ class MaskColorizedWriter:
     if self.mask_colorize:
       self.create_gray_map()
 
-    self.colorized_dir = self.config.get(ConfigParser.INFER, "colorized_dir", dvalue=None)
-    if self.mask_colorize and self.colorized_dir !=None:
-      if os.path.exists(self.colorized_dir):
-        shutil.rmtree(self.colorized_dir)
-      if not os.path.exists(self.colorized_dir):
-        os.makedirs(self.colorized_dir)
-        
+
     # You will have to resize the predicted image to be the original image size (w, h), and save it as a grayscale image.
     mask = cv2.resize(image, size, interpolation=cv2.INTER_NEAREST)
 
